@@ -1,0 +1,640 @@
+from math import ceil, cos, log, log10, sin, sqrt
+from random import random, seed, randint
+from numpy import arctan, floor
+from itertools import count
+from operator import xor
+
+"""
+Data Structure Composition
+"""
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+        else:
+            raise IndexError("Pop from an empty stack")
+
+    def peek(self):
+        if not self.is_empty():
+            return self.items[-1]
+        else:
+            raise IndexError("Peek from an empty stack")
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+    def size(self):
+        return len(self.items)
+
+    def __repr__(self):
+        return str(self.items)
+
+"""
+Operation Structure Instantiations
+"""
+operand_stack = Stack()
+dictionary_stack = Stack()
+dictionary_stack.push({})
+
+"""
+Input Processing
+"""
+def process_boolean(value):
+    if value == "true":
+        return (True, True)
+    elif value == "false":
+        return (True, False)
+    else:
+        return False
+
+def process_number(value):
+    try:
+        float_value = float(value)
+        if float_value.is_integer():
+            return (True, int(float_value))
+        else:
+            return (True, float_value)
+    except ValueError:
+        return False
+
+def process_code_block(value):
+    if len(value) >= 2 and value.startswith("{") and value.endswith("}"):
+        return (True, value[1:-1].strip().split())
+
+def process_name_constant(value):
+    if value.startswith("/"):
+        return (True, value)
+    
+def process_constants(input):
+    res = process_boolean(input)
+    res = res or process_number(input)
+    res = res or process_code_block(input)
+    res = res or process_name_constant(input)
+    return res
+
+def process_input(input):
+    result = process_constants(input)
+    if result:
+        operand_stack.push(result[1])
+    else:
+        lookup_in_dictionary(input)
+
+def lookup_in_dictionary(input):
+    top_dict = dictionary_stack.peek()
+    if input in top_dict:
+        value = top_dict[input]
+        if callable(value):
+            value()
+        elif isinstance(value, list):
+            for item in value:
+                process_input(item)
+        else:
+            operand_stack.push(value)
+    else:
+        print(" not in dictionary ")
+    
+def repl():
+    while True:
+        user_input = input("REPL> ")
+        tokens = user_input.split()
+        if user_input.lower() == 'quit':
+            break
+        for i in tokens:
+            process_input(i)
+        #process_input(user_input)
+        print(f"Operand Stack: {operand_stack}")
+
+def def_operation():
+    if operand_stack.size() >=2:
+        value = operand_stack.pop()
+        name = operand_stack.pop()
+
+        if isinstance(name, str) and name.startswith("/"):
+            key = name[1:]
+            dictionary_stack.peek()[key] = value
+        else:
+            operand_stack.push(name)
+            operand_stack.push(value)
+    else:
+        print(" not enough operands")
+
+dictionary_stack.peek()["def"] = def_operation
+
+"""
+Arithmetic Operations
+"""
+def add_operation():
+    if operand_stack.size() >= 2:
+        op1 = operand_stack.pop()
+        op2 = operand_stack.pop()
+        res = op1 + op2
+        operand_stack.push(res)
+    else:
+        print(" not enough operands")
+
+dictionary_stack.peek()["add"] = add_operation
+
+def mul_operation():
+    if operand_stack.size() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+        res = val1 * val2
+        operand_stack.push(res)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["mul"] = mul_operation
+
+def div_operation():
+    if operand_stack.size() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+        res = val1 / val2
+        operand_stack.push(res)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["div"] = div_operation
+
+def sub_operation():
+    if operand_stack.size() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+        res = val1 - val2
+        operand_stack.push(res)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["sub"] = sub_operation
+
+def abs_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        if val1 < 0:
+            val1 = val1 * (-1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["abs"] = abs_operation
+
+def neg_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = val1 * -1
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["neg"] = neg_operation
+
+def ceiling_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = ceil(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+def floor_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = floor(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["floor"] = floor_operation
+
+def round_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = round(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["round"] = round_operation
+
+def sqrt_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = sqrt(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["sqrt"] = sqrt_operation
+
+def atan_operation():
+    if operand_stack.size() >= 2:
+        den = operand_stack.pop()
+        num = operand_stack.pop()
+        res = arctan(num/den)
+        operand_stack.push(res)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["atan"] = atan_operation
+
+def sin_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = sin(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["sin"] = sin_operation
+
+def cos_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = cos(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["cos"] = cos_operation
+
+def exp_operation():
+    if operand_stack.size() >= 2:
+        num = operand_stack.pop()
+        base = operand_stack.pop()
+        res = base ** num
+        operand_stack.push(res)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["exp"] = exp_operation
+
+def ln_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = log(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["ln"] = ln_operation
+
+def log_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        val1 = log10(val1)
+        operand_stack.push(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["log"] = log_operation
+
+def rand_operation():
+    rndInt = randint(min, max)
+    operand_stack(rndInt)
+
+dictionary_stack.peek()["rand"] = rand_operation
+
+def srand_operation():
+    if operand_stack.size() >= 1:
+        val1 = operand_stack.pop()
+        seed(val1)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["srand"] = srand_operation
+
+def rrand_operation():
+    rand_operation()
+
+dictionary_stack.peek()["rrand"] = rrand_operation
+
+"""
+Stack Manipulation
+"""
+def exch_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1)
+        operand_stack.push(val2)
+    else:
+        print("Not Enough operands")
+
+dictionary_stack.peek()["exch"] = exch_operation
+
+def pop_operation():
+    if operand_stack() >= 1:
+        return operand_stack.pop()
+    else:
+        print("Stack is empty")
+
+dictionary_stack.peek()["pop"] = pop_operation
+
+def dup_operation():
+    if operand_stack() >= 2:
+        val = operand_stack.peek()
+        operand_stack.push(val)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["dup"] = dup_operation
+
+def clear_stack():
+    while not operand_stack.is_empty():
+        operand_stack.pop()
+
+dictionary_stack.peek()["clear"] = clear_stack
+
+def count_operation():
+    num = operand_stack.size()
+    operand_stack.push(num)
+
+dictionary_stack.peek()["count"] = count_operation
+
+def mark_operation():
+    operand_stack.push("mark")
+
+dictionary_stack.peek()["mark"] = mark_operation
+
+def clearToMark_operation():
+    while operand_stack.peek() != "mark" or not operand_stack.is_empty():
+        operand_stack.pop()
+    operand_stack.pop()
+
+dictionary_stack.peek()["cleartomark"] = clearToMark_operation
+
+def countToMark():
+    it = 0
+    tempStack = Stack()
+
+    while operand_stack.peek() != "mark" or not operand_stack.is_empty():
+        tempStack.push(operand_stack.pop())
+        it += 1
+    
+    while not tempStack.is_empty():
+        operand_stack.push(tempStack.pop())
+
+    operand_stack.push(it)
+
+dictionary_stack.peek()["counttomark"] = countToMark
+
+def index_operation():
+    if operand_stack() >= 1:
+        tempStack = Stack()
+        ind = operand_stack.pop()
+        for i in range(ind - 1):
+            tempStack.push(operand_stack.pop())
+        target = operand_stack.peek()
+        while not tempStack.is_empty():
+            operand_stack.push(operand_stack.pop())
+        operand_stack.push(target)
+
+dictionary_stack.peek()["index"] = index_operation
+
+"""
+String Operations
+"""
+def string_operation():
+    if operand_stack() >= 1:
+        length = operand_stack.pop()
+        newString = "".ljust(length)
+        operand_stack.push(newString)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["string"] = string_operation
+
+def length_operation():
+    if operand_stack() >= 1:
+        targetString = operand_stack.pop()
+        operand_stack.push(len(targetString))
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["length"] = length_operation
+
+def get_operation():
+    if operand_stack() >= 2:
+        targetIndex = operand_stack.pop()
+        targetString = operand_stack.pop()
+        operand_stack.push(targetString[targetIndex])
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["get"] = get_operation
+
+def put_operation():
+    if operand_stack() >= 3:
+        num = operand_stack.pop()
+        ind = operand_stack.pop()
+        targetString = operand_stack.pop()
+
+        targetString[ind] = num
+        operand_stack.push(targetString)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["put"] = put_operation
+
+def getInterval_operation():
+    if operand_stack() >= 3:
+        count = operand_stack.pop()
+        ind = operand_stack.pop()
+        targetString = operand_stack.pop()
+        newString = ""
+
+        for i in range(ind, ind + count - 1):
+            newString += targetString[i]
+        operand_stack.push(newString)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["getinterval"] = getInterval_operation
+
+"""
+Boolean Operations
+"""
+def eq_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 == val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["eq"] = eq_operation
+
+def ne_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 != val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["ne"] = ne_operation
+
+def ge_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 >= val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["ge"] = ge_operation
+
+def gt_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 > val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["gt"] = gt_operation
+
+def le_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 <= val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["le"] = le_operation
+
+def lt_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 < val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["lt"] = lt_operation
+
+def and_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 and val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["and"] = and_operation
+
+def not_operation():
+    if operand_stack() >= 1:
+        val1 = operand_stack.pop()
+
+        operand_stack.push(not val1)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["not"] = not_operation
+
+def or_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(val1 or val2)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["or"] = or_operation
+
+def xor_operation():
+    if operand_stack() >= 2:
+        val1 = operand_stack.pop()
+        val2 = operand_stack.pop()
+
+        operand_stack.push(xor(val1, val2))
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["xor"] = xor_operation
+
+def true_operation():
+    operand_stack.push(True)
+
+dictionary_stack.peek()["true"] = true_operation
+
+def false_operation():
+    operand_stack.push(False)
+
+dictionary_stack.peek()["false"] = false_operation
+
+"""
+Dictionary Operations
+"""
+def dict_operation():
+    if operand_stack() >= 1:
+        val1 = operand_stack.pop()
+
+        operand_stack.push({})
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["dict"] = dict_operation
+
+def length_operation():
+    operand_stack.push(len(dictionary_stack.peek()))
+
+dictionary_stack.peek()["length"] = length_operation
+
+def begin_operation():
+    if operand_stack() >= 1:
+        val1 = operand_stack.pop()
+
+        dictionary_stack.push({})
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["begin"] = begin_operation
+
+def end_operation():
+    dictionary_stack.pop()
+
+dictionary_stack.peek()["end"] = end_operation
+
+"""
+Input/Output Operations
+"""
+def print_operation():
+    if operand_stack() >= 1:
+        val1 = operand_stack.pop()
+
+        print(val1)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["print"] = print_operation
+
+def doubleEquals_operation():
+    if operand_stack() >= 1:
+        val1 = operand_stack.pop()
+
+        print(val1)
+    else:
+        print("Not Enough Operands")
+
+dictionary_stack.peek()["=="] = doubleEquals_operation
+
+#Run Interpreter
+repl()
