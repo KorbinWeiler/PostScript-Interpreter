@@ -40,7 +40,7 @@ class Stack:
 """
 Operation Structure Instantiations
 """
-staticScope = True #Set to False for dynamic scoping
+staticScope = False #Set to True for static scoping
 operand_stack = Stack()
 dictionary_stack = Stack()
 dictionary_stack.push({})
@@ -115,7 +115,7 @@ def lookup_in_dictionary(input):
                     else:
                         operand_stack.push(value)
                     break
-            if dictionary_stack.size() == 1:
+            if dictionary_stack.size() == 0:
                 print("Not in Dictionary")
             
             while tempStack.size() > 0:
@@ -659,6 +659,7 @@ dictionary_stack.peek()["begin"] = begin_operation
 def end_operation():
     if dictionary_stack.size() < 1:
         dictionary_stack.pop()
+    
 
 dictionary_stack.peek()["end"] = end_operation
 
