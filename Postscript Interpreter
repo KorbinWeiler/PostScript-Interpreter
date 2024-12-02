@@ -1,5 +1,6 @@
 from math import ceil, cos, log, log10, sin, sqrt
 from random import random, seed, randint
+import re
 from numpy import arctan, floor
 from itertools import count
 from operator import xor
@@ -24,7 +25,8 @@ class Stack:
         if not self.is_empty():
             return self.items[-1]
         else:
-            raise IndexError("Peek from an empty stack")
+            #raise IndexError("Peek from an empty stack")
+            return {}
 
     def is_empty(self):
         return len(self.items) == 0
@@ -98,9 +100,9 @@ def lookup_in_dictionary(input):
         else:
             operand_stack.push(value)
     else:
-        if not staticScope:
+        if staticScope:
             tempStack = Stack()
-            while dictionary_stack.size() > 0:
+            while dictionary_stack.size() > 1:
                 tempStack.push(dictionary_stack.pop())
                 top_dict = dictionary_stack.peek()
                 if input in top_dict:
@@ -113,7 +115,7 @@ def lookup_in_dictionary(input):
                     else:
                         operand_stack.push(value)
                     break
-            if dictionary_stack.size() == 0:
+            if dictionary_stack.size() == 1:
                 print("Not in Dictionary")
             
             while tempStack.size() > 0:
@@ -124,7 +126,7 @@ def lookup_in_dictionary(input):
             while dictionary_stack.size() > 1:
                 tempStack.push(dictionary_stack.pop())
 
-            while tempStack.size() > 0:
+            while dictionary_stack.size() > 1:
                 tempStack.push(dictionary_stack.pop())
                 top_dict = dictionary_stack.peek()
                 if input in top_dict:
@@ -150,12 +152,9 @@ def lookup_in_dictionary(input):
 def repl():
     while True:
         user_input = input("REPL> ")
-        tokens = user_input.split()
         if user_input.lower() == 'quit':
             break
-        for i in tokens:
-            process_input(i)
-        #process_input(user_input)
+        process_input(user_input)
         print(f"Operand Stack: {operand_stack}")
 
 def def_operation():
@@ -642,7 +641,8 @@ def dict_operation():
 dictionary_stack.peek()["dict"] = dict_operation
 
 def length_operation():
-    operand_stack.push(len(dictionary_stack.peek()))
+    res = dictionary_stack.peek()
+    operand_stack.push(len(res))
 
 dictionary_stack.peek()["length"] = length_operation
 
@@ -657,7 +657,8 @@ def begin_operation():
 dictionary_stack.peek()["begin"] = begin_operation
 
 def end_operation():
-    dictionary_stack.pop()
+    if dictionary_stack.size() < 1:
+        dictionary_stack.pop()
 
 dictionary_stack.peek()["end"] = end_operation
 
@@ -688,11 +689,12 @@ dictionary_stack.peek()["=="] = doubleEquals_operation
 
 def if_operation():
     if operand_stack.size() >= 2:
-        proc = operand_stack.pop()
         bo = operand_stack.pop()
+        proc = operand_stack.pop()
 
         if bo:
-            proc
+            for i in proc:
+                process_input(i)
 
 dictionary_stack.peek()["if"] = if_operation
 
@@ -703,9 +705,11 @@ def ifelse_operation():
         bo = operand_stack.pop()
 
         if bo:
-            process_input(proc1)
+            for i in proc1:
+                process_input(i)
         else:
-            process_input(proc2)
+            for i in proc2:
+                process_input(i)
 
 #Loop Operations
 def forLoop():
@@ -716,7 +720,7 @@ def forLoop():
         start= operand_stack.pop()
 
         for i in range(start, stop, step):
-            process_input(proc)
+            operand_stack.push(process_input(proc))
 
 dictionary_stack.peek()["for"] = forLoop
 
@@ -726,7 +730,8 @@ def repeat_operation():
         count = operand_stack.pop()
 
         for i in range(count):
-            process_input(proc)
+            for j in proc:
+                process_input(j)
 
 dictionary_stack.peek()["repeat"] = repeat_operation
 
