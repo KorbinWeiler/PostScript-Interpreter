@@ -38,7 +38,7 @@ class Stack:
 """
 Operation Structure Instantiations
 """
-staticScope = True
+staticScope = True #Set to False for dynamic scoping
 operand_stack = Stack()
 dictionary_stack = Stack()
 dictionary_stack.push({})
@@ -98,7 +98,7 @@ def lookup_in_dictionary(input):
         else:
             operand_stack.push(value)
     else:
-        if staticScope:
+        if not staticScope:
             tempStack = Stack()
             while dictionary_stack.size() > 0:
                 tempStack.push(dictionary_stack.pop())
@@ -683,6 +683,53 @@ def doubleEquals_operation():
         print("Not Enough Operands")
 
 dictionary_stack.peek()["=="] = doubleEquals_operation
+
+#Conditional Operations
+
+def if_operation():
+    if operand_stack.size() >= 2:
+        proc = operand_stack.pop()
+        bo = operand_stack.pop()
+
+        if bo:
+            proc
+
+dictionary_stack.peek()["if"] = if_operation
+
+def ifelse_operation():
+    if operand_stack.size() >= 3:
+        proc2 = operand_stack.pop()
+        proc1 = operand_stack.pop()
+        bo = operand_stack.pop()
+
+        if bo:
+            process_input(proc1)
+        else:
+            process_input(proc2)
+
+#Loop Operations
+def forLoop():
+    if operand_stack.size() >= 4:
+        proc = operand_stack.pop()
+        stop = operand_stack.pop()
+        step = operand_stack.pop()
+        start= operand_stack.pop()
+
+        for i in range(start, stop, step):
+            process_input(proc)
+
+dictionary_stack.peek()["for"] = forLoop
+
+def repeat_operation():
+    if operand_stack.size() >= 2:
+        proc = operand_stack.pop()
+        count = operand_stack.pop()
+
+        for i in range(count):
+            process_input(proc)
+
+dictionary_stack.peek()["repeat"] = repeat_operation
+
 
 #Run Interpreter
 repl()
