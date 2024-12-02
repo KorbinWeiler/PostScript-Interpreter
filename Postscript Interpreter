@@ -38,6 +38,7 @@ class Stack:
 """
 Operation Structure Instantiations
 """
+staticScope = True
 operand_stack = Stack()
 dictionary_stack = Stack()
 dictionary_stack.push({})
@@ -97,7 +98,54 @@ def lookup_in_dictionary(input):
         else:
             operand_stack.push(value)
     else:
-        print(" not in dictionary ")
+        if staticScope:
+            tempStack = Stack()
+            while dictionary_stack.size() > 0:
+                tempStack.push(dictionary_stack.pop())
+                top_dict = dictionary_stack.peek()
+                if input in top_dict:
+                    value = top_dict[input]
+                    if callable(value):
+                        value()
+                    elif isinstance(value, list):
+                        for item in value:
+                            process_input(item)
+                    else:
+                        operand_stack.push(value)
+                    break
+            if dictionary_stack.size() == 0:
+                print("Not in Dictionary")
+            
+            while tempStack.size() > 0:
+                dictionary_stack.push(tempStack.pop())
+        
+        else:
+            tempStack = Stack()
+            while dictionary_stack.size() > 1:
+                tempStack.push(dictionary_stack.pop())
+
+            while tempStack.size() > 0:
+                tempStack.push(dictionary_stack.pop())
+                top_dict = dictionary_stack.peek()
+                if input in top_dict:
+                    value = top_dict[input]
+                    if callable(value):
+                        value()
+                    elif isinstance(value, list):
+                        for item in value:
+                            process_input(item)
+                    else:
+                        operand_stack.push(value)
+                    break
+
+            if tempStack.size() == 0:
+                print("Not in Dictionary")
+
+            while tempStack.size() > 0:
+                dictionary_stack.push(tempStack.pop())
+            
+
+
     
 def repl():
     while True:
@@ -318,7 +366,7 @@ dictionary_stack.peek()["rrand"] = rrand_operation
 Stack Manipulation
 """
 def exch_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -330,7 +378,7 @@ def exch_operation():
 dictionary_stack.peek()["exch"] = exch_operation
 
 def pop_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         return operand_stack.pop()
     else:
         print("Stack is empty")
@@ -338,7 +386,7 @@ def pop_operation():
 dictionary_stack.peek()["pop"] = pop_operation
 
 def dup_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val = operand_stack.peek()
         operand_stack.push(val)
     else:
@@ -386,7 +434,7 @@ def countToMark():
 dictionary_stack.peek()["counttomark"] = countToMark
 
 def index_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         tempStack = Stack()
         ind = operand_stack.pop()
         for i in range(ind - 1):
@@ -402,7 +450,7 @@ dictionary_stack.peek()["index"] = index_operation
 String Operations
 """
 def string_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         length = operand_stack.pop()
         newString = "".ljust(length)
         operand_stack.push(newString)
@@ -412,7 +460,7 @@ def string_operation():
 dictionary_stack.peek()["string"] = string_operation
 
 def length_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         targetString = operand_stack.pop()
         operand_stack.push(len(targetString))
     else:
@@ -421,7 +469,7 @@ def length_operation():
 dictionary_stack.peek()["length"] = length_operation
 
 def get_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         targetIndex = operand_stack.pop()
         targetString = operand_stack.pop()
         operand_stack.push(targetString[targetIndex])
@@ -431,7 +479,7 @@ def get_operation():
 dictionary_stack.peek()["get"] = get_operation
 
 def put_operation():
-    if operand_stack() >= 3:
+    if operand_stack.size() >= 3:
         num = operand_stack.pop()
         ind = operand_stack.pop()
         targetString = operand_stack.pop()
@@ -444,7 +492,7 @@ def put_operation():
 dictionary_stack.peek()["put"] = put_operation
 
 def getInterval_operation():
-    if operand_stack() >= 3:
+    if operand_stack.size() >= 3:
         count = operand_stack.pop()
         ind = operand_stack.pop()
         targetString = operand_stack.pop()
@@ -462,7 +510,7 @@ dictionary_stack.peek()["getinterval"] = getInterval_operation
 Boolean Operations
 """
 def eq_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -473,7 +521,7 @@ def eq_operation():
 dictionary_stack.peek()["eq"] = eq_operation
 
 def ne_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -484,7 +532,7 @@ def ne_operation():
 dictionary_stack.peek()["ne"] = ne_operation
 
 def ge_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -495,7 +543,7 @@ def ge_operation():
 dictionary_stack.peek()["ge"] = ge_operation
 
 def gt_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -506,7 +554,7 @@ def gt_operation():
 dictionary_stack.peek()["gt"] = gt_operation
 
 def le_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -517,7 +565,7 @@ def le_operation():
 dictionary_stack.peek()["le"] = le_operation
 
 def lt_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -528,7 +576,7 @@ def lt_operation():
 dictionary_stack.peek()["lt"] = lt_operation
 
 def and_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -539,7 +587,7 @@ def and_operation():
 dictionary_stack.peek()["and"] = and_operation
 
 def not_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         val1 = operand_stack.pop()
 
         operand_stack.push(not val1)
@@ -549,7 +597,7 @@ def not_operation():
 dictionary_stack.peek()["not"] = not_operation
 
 def or_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -560,7 +608,7 @@ def or_operation():
 dictionary_stack.peek()["or"] = or_operation
 
 def xor_operation():
-    if operand_stack() >= 2:
+    if operand_stack.size() >= 2:
         val1 = operand_stack.pop()
         val2 = operand_stack.pop()
 
@@ -584,7 +632,7 @@ dictionary_stack.peek()["false"] = false_operation
 Dictionary Operations
 """
 def dict_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         val1 = operand_stack.pop()
 
         operand_stack.push({})
@@ -599,7 +647,7 @@ def length_operation():
 dictionary_stack.peek()["length"] = length_operation
 
 def begin_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         val1 = operand_stack.pop()
 
         dictionary_stack.push({})
@@ -617,7 +665,7 @@ dictionary_stack.peek()["end"] = end_operation
 Input/Output Operations
 """
 def print_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         val1 = operand_stack.pop()
 
         print(val1)
@@ -627,7 +675,7 @@ def print_operation():
 dictionary_stack.peek()["print"] = print_operation
 
 def doubleEquals_operation():
-    if operand_stack() >= 1:
+    if operand_stack.size() >= 1:
         val1 = operand_stack.pop()
 
         print(val1)
