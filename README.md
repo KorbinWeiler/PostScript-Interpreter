@@ -1,7 +1,7 @@
 # PostScript-Interpreter
 ## Run Code
-git clone https://github.com/KorbinWeiler/PostScript-Interpreter.git
-navigate to local repo
+git clone https://github.com/KorbinWeiler/PostScript-Interpreter.git \n
+navigate to local repo \n
 py Postscript_Interpreter (Or another variation of the python command such as python or python3)
 ## Change Scope
 Set the boolean value at line 43 to True
